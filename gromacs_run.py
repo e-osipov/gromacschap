@@ -15,8 +15,9 @@ def run_gmx(command):
 # 1. Provide user input
 parser =  argparse.ArgumentParser()
 parser.add_argument('-i',help='GHARMM-GUI output with GROMACS files. You should prepare system using CHARMM-GUI', default='input/gromacs')
-parser.add_argument('-f',help='Force field to use for protein')
-parser.add_argument('-w',help='Solvent force field',default='tip3p')
+parser.add_argument('-m', help='Path to MDP (params) folder')
+#parser.add_argument('-f',help='Force field to use for protein')
+#parser.add_argument('-w',help='Solvent force field',default='tip3p')
 parser.add_argument('-o',help='Output folder name', default='run')
 args = parser.parse_args()
 
@@ -25,8 +26,8 @@ shutil.copy2(f'{args.i}/step5_input.gro',args.o)
 shutil.copy2(f'{args.i}/step5_input.pdb',args.o)
 shutil.copy2(f'{args.i}/topol.top',args.o)
 shutil.copy2(f'{args.i}index.ndx',args.o)
-shutil.copy2(f'{args.i}/toppar',args.o)
-shutil.copy2('tutorial/mdp/*.mdp',args.o)
+shutil.copytree(f'{args.i}/toppar',args.o)
+shutil.copy2(f'{args.m}/*.mdp',args.o)
 
 os.chdir(args.o)
 

@@ -2,6 +2,7 @@ import subprocess
 import os
 import argparse
 import shutil
+import glob
 
 # use Gemini to write some functions
 # Main code comes from https://tutorials.gromacs.org/membrane-protein.html
@@ -22,12 +23,13 @@ parser.add_argument('-o',help='Output folder name', default='run')
 args = parser.parse_args()
 
 # 2. Copy required files to run directory
-shutil.copy2(f'{args.i}/step5_input.gro',args.o)
-shutil.copy2(f'{args.i}/step5_input.pdb',args.o)
-shutil.copy2(f'{args.i}/topol.top',args.o)
-shutil.copy2(f'{args.i}index.ndx',args.o)
-shutil.copytree(f'{args.i}/toppar',args.o)
-shutil.copy2(f'{args.m}/*.mdp',args.o)
+shutil.copy2(f'{args.i}/step5_input.gro',f'{args.o}/')
+shutil.copy2(f'{args.i}/step5_input.pdb',f'{args.o}/')
+shutil.copy2(f'{args.i}/topol.top',f'{args.o}/')
+shutil.copy2(f'{args.i}index.ndx',f'{args.o}/')
+shutil.copytree(f'{args.i}/toppar',f'{args.o}/')
+for f in glob.glob(f'{args.m}/*.mdp'):
+    shutil.copy2(f,f'{args.o}/')
 
 os.chdir(args.o)
 

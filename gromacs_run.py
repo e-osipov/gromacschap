@@ -4,10 +4,21 @@ import argparse
 import shutil
 import glob
 
+import json
+
+import numpy as np
+from matplotlib import pyplot as pl
+
+### CHAP defaults
+# !!! Adjust configs for GROMACS
+
+
+###
+
 # use Gemini to write some functions
 # Main code comes from https://tutorials.gromacs.org/membrane-protein.html
-def run_gmx(command):
-    """Helper to run GROMACS commands via shell"""
+def run_shell(command):
+    """Helper to run commands via shell"""
     try:
         subprocess.run(command, shell=True, check=True)
     except subprocess.CalledProcessError as e:
@@ -23,65 +34,104 @@ parser.add_argument('-o',help='Output folder name', default='run')
 args = parser.parse_args()
 
 # 2. Copy required files to run directory
+os.mkdir(args.o)
 shutil.copy2(f'{args.i}/step5_input.gro',f'{args.o}/')
 shutil.copy2(f'{args.i}/step5_input.pdb',f'{args.o}/')
 shutil.copy2(f'{args.i}/topol.top',f'{args.o}/')
 shutil.copy2(f'{args.i}index.ndx',f'{args.o}/')
-shutil.copytree(f'{args.i}/toppar',f'{args.o}/')
+shutil.copytree(f'{args.i}/toppar',f'{args.o}/toppar')
 for f in glob.glob(f'{args.m}/*.mdp'):
     shutil.copy2(f,f'{args.o}/')
 
 os.chdir(args.o)
 
 # 3. Run minimization
-run_gmx("gmx grompp -f step6.0_minimization.mdp -o minimization.tpr -c step5_input.gro -r step5_input.gro -p topol.top")
-run_gmx("gmx mdrun -v -deffnm minimization")
+run_shell("gmx grompp -f step6.0_minimization.mdp -o minimization.tpr -c step5_input.gro -r step5_input.gro -p topol.top")
+run_shell("gmx mdrun -v -deffnm minimization")
 
 # 4. Report minimization values
-run_gmx('gmx energy -f minimization.edr -o potential.xvg -xvg none')
+#run_shell('gmx energy -f minimization.edr -o potential.xvg -xvg none')
 
 print("Setup Complete. Ready for NVT/NPT equilibration.")
 
 # 5. Run NVT
 # 5.1 Step 1
-run_gmx('gmx grompp -f step6.1_equilibration_NVT_step1.mdp -o step6.1_equilibration_NVT_step1.tpr -c minimization.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_gmx('gmx mdrun -v -deffnm step6.1_equilibration_NVT_step1')
+run_shell('gmx grompp -f step6.1_equilibration_NVT_step1.mdp -o step6.1_equilibration_NVT_step1.tpr -c minimization.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.1_equilibration_NVT_step1')
 
 # 5.2 Step 2
-run_gmx('gmx grompp -f step6.2_equilibration_NVT_step2.mdp -o step6.2_equilibration_NVT_step2.tpr -c step6.1_equilibration_NVT_step1.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_gmx('gmx mdrun -v -deffnm step6.2_equilibration_NVT_step2')
+run_shell('gmx grompp -f step6.2_equilibration_NVT_step2.mdp -o step6.2_equilibration_NVT_step2.tpr -c step6.1_equilibration_NVT_step1.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.2_equilibration_NVT_step2')
 
 # 5.3 Eval energy
-run_gmx('gmx energy -f step6.2_equilibration_NVT_step2.edr -o  NVT_S2-temp.xvg -xvg none')
+#run_shell('echo 17|gmx energy -f step6.2_equilibration_NVT_step2.edr -o  NVT_S2-temp.xvg -xvg none')
 
 # 6. Run NPT
-run_gmx('gmx grompp -f step6.3_equilibration_NPT_step1.mdp -o step6.3_equilibration_NPT_step1.tpr -c step6.2_equilibration_NVT_step2.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_gmx('gmx mdrun -v -deffnm step6.3_equilibration_NPT_step1')
+run_shell('gmx grompp -f step6.3_equilibration_NPT_step1.mdp -o step6.3_equilibration_NPT_step1.tpr -c step6.2_equilibration_NVT_step2.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.3_equilibration_NPT_step1')
 
 # 6.2 Run step 2, reduce constraints
-run_gmx('gmx grompp -f step6.4_equilibration_NPT_step2.mdp -o step6.4_equilibration_NPT_step2.tpr -c step6.3_equilibration_NPT_step1.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_gmx('gmx mdrun -v -deffnm step6.4_equilibration_NPT_step2')
+run_shell('gmx grompp -f step6.4_equilibration_NPT_step2.mdp -o step6.4_equilibration_NPT_step2.tpr -c step6.3_equilibration_NPT_step1.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.4_equilibration_NPT_step2')
 
 # 6.3 Run step 3 of NPT
-run_gmx('gmx grompp -f step6.5_equilibration_NPT_step3.mdp -o step6.5_equilibration_NPT_step3.tpr -c step6.4_equilibration_NPT_step2.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_gmx('gmx mdrun -v -deffnm step6.5_equilibration_NPT_step3')
+run_shell('gmx grompp -f step6.5_equilibration_NPT_step3.mdp -o step6.5_equilibration_NPT_step3.tpr -c step6.4_equilibration_NPT_step2.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.5_equilibration_NPT_step3')
 
 # 6.4 Run step 4 of NPT
-run_gmx('gmx grompp -f step6.6_equilibration_NPT_step4.mdp -o step6.6_equilibration_NPT_step4.tpr -c step6.5_equilibration_NPT_step3.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_gmx('gmx mdrun -v -deffnm step6.6_equilibration_NPT_step4')
+run_shell('gmx grompp -f step6.6_equilibration_NPT_step4.mdp -o step6.6_equilibration_NPT_step4.tpr -c step6.5_equilibration_NPT_step3.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.6_equilibration_NPT_step4')
 
 # 6.5 Check pressure
-run_gmx('echo 18|gmx energy -f step6.6_equilibration_NPT_step4.edr -o  NPT_S4_Press.xvg -xvg none')
+#run_shell('echo 18|gmx energy -f step6.6_equilibration_NPT_step4.edr -o  NPT_S4_Press.xvg -xvg none')
 print("""The system's temperature should rise to the desired level (~303 K) and stay steady for the rest of the equilibration. While, pressure is the parameter which fluctuates a lot during the MD simulation, and its average should be statistically comparable with the pre-defined pressure (1 bar).""")
 
 # 7. Production run
 # Generate params
-run_gmx('gmx grompp -f step7_production_revised.mdp -o step7_production.tpr -c step6.6_equilibration_NPT_step4.gro -t step6.6_equilibration_NPT_step4.cpt -p topol.top -n index.ndx')
+run_shell('gmx grompp -f step7_production_revised.mdp -o step7_production.tpr -c step6.6_equilibration_NPT_step4.gro -t step6.6_equilibration_NPT_step4.cpt -p topol.top -n index.ndx')
 
-run_gmx('gmx mdrun -s step7_production -cpi')
+run_shell('gmx mdrun -s step7_production -cpi')
 
 # 8. Report generation
 # RMSD
-run_gmx('echo 4 4 |gmx rms -s step7_production.tpr -f step7_production_traj_comp_skip500.xtc -o production_rmsd.xvg -bin production.rmsd.dat -tu ns -fit rot+trans -xvg none')
+#run_shell('echo 4 4 |gmx rms -s step7_production.tpr -f step7_production_traj_comp_skip500.xtc -o production_rmsd.xvg -bin production.rmsd.dat -tu ns -fit rot+trans -xvg none')
 # ENERGY
-run_gmx('echo 13|gmx energy -f step7_production.edr -o production_Etot.xvg -xvg none')
+#run_shell('echo 13|gmx energy -f step7_production.edr -o production_Etot.xvg -xvg none')
+
+# 9. Run CHAP
+run_shell('chap -f traj_comp.xtc -s step7_production.tpr \
+          -sel-pathway 1 -sel-solvent 16 -hydrophob-database zhu_2016')
+# modify data if zhu_2016 if necessary
+
+# 10. Draw graphs
+
+with open("output.json") as data_file:
+    data = json.load(data_file)
+
+
+# begin new plot:
+pl.figure("radius_profile")
+
+# represent radius profile as black line:
+pl.plot(                                                                        
+    np.array(data["pathwayProfile"]["s"]),                                      
+    np.array(data["pathwayProfile"]["radiusMean"]),                             
+    "k-")  
+pf = np.array(data["residueSummary"]["poreFacing"]["mean"]) > 0.5 
+pl.scatter(                                                                     
+    np.array(data["residueSummary"]["s"]["mean"])[pf],                          
+    np.array(data["residueSummary"]["rho"]["mean"])[pf],                        
+    c = np.array(data["residueSummary"]["hydrophobicity"])[pf],                 
+    marker = "o",                                                               
+    cmap = "BrBG_r")                                                            
+pl.clim(                                                                        
+    -max(abs(np.array(data["residueSummary"]["hydrophobicity"]))),              
+    max(abs(np.array(data["residueSummary"]["hydrophobicity"]))))               
+cbar = pl.colorbar()                                                            
+cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
+
+# save plot to file:
+pl.savefig("radius_profile.png")
+
+# end figure definition:
+pl.close("radius_profile")

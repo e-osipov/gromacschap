@@ -1,5 +1,5 @@
 # =============================================================================
-# Dockerfile: GROMACS 2018 + GPU (CUDA) + CHAP
+# Dockerfile: GROMACS 2018 + GPU (OpenCL) + CHAP
 # Base: nvidia/cuda with Ubuntu 18.04
 # =============================================================================
 
@@ -13,7 +13,7 @@ FROM nvidia/cuda:11.8.0-devel-ubuntu18.04
 
 
 LABEL maintainer="evgenii@gios.bio" \
-      description="GROMACS 2018 with CUDA GPU support + CHAP (Channel annotation package)"
+      description="GROMACS 2018 with OpenCL GPU support + CHAP (Channel annotation package)"
 
 # ---------------------------------------------------------------------------
 # 1. System dependencies
@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # ---------------------------------------------------------------------------
-# 2. Build & install GROMACS 2018.8 (latest 2018 patch) with CUDA support
+# 2. Build & install GROMACS 2018.8 (latest 2018 patch) with OpenCL support
 # --------------------------------------------------------------------------
 ENV GROMACS_VERSION=2018
 ENV GROMACS_INSTALL_DIR=/opt/gromacs

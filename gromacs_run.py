@@ -12,15 +12,26 @@ from matplotlib import pyplot as pl
 ### CHAP defaults
 # !!! Adjust configs for GROMACS
 
+DOCKER_IMAGE = "CHAP:1.0"
+CONTAINER_DATA = "/data"
 
 ###
 
 # use Gemini to write some functions
 # Main code comes from https://tutorials.gromacs.org/membrane-protein.html
 def run_shell(command):
-    """Helper to run commands via shell"""
+    """Helper to run commands inside the CHAP Docker container.
+    Mounts the current working directory as /data inside the container."""
+    workdir = os.path.abspath(os.getcwd())
+    docker_cmd = (
+        f"docker run --rm "
+        f"-v {workdir}:{CONTAINER_DATA} "
+        f"-w {CONTAINER_DATA} "
+        f"{DOCKER_IMAGE} "
+        f"{command}"
+    )
     try:
-        subprocess.run(command, shell=True, check=True)
+        subprocess.run(docker_cmd, shell=True, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error running command: {command}\n{e}")
 
@@ -38,7 +49,7 @@ os.mkdir(args.o)
 shutil.copy2(f'{args.i}/step5_input.gro',f'{args.o}/')
 shutil.copy2(f'{args.i}/step5_input.pdb',f'{args.o}/')
 shutil.copy2(f'{args.i}/topol.top',f'{args.o}/')
-shutil.copy2(f'{args.i}index.ndx',f'{args.o}/')
+shutil.copy2(f'{args.i}/index.ndx',f'{args.o}/')
 shutil.copytree(f'{args.i}/toppar',f'{args.o}/toppar')
 for f in glob.glob(f'{args.m}/*.mdp'):
     shutil.copy2(f,f'{args.o}/')

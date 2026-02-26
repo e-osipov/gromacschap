@@ -1,11 +1,10 @@
 # =============================================================================
-# Dockerfile: GROMACS 2018 + GPU (OpenCL) + CHAP
+# Dockerfile: GROMACS 2018 + GPU + CHAP
 # Base: nvidia/cuda with Ubuntu 18.04
 # =============================================================================
 
 
-FROM nvidia/cuda:12.8.1-devel-ubuntu20.04
-
+FROM nvidia/cuda:11.8.0-devel-ubuntu18.04
 
 # NVIDIA OpenCL ICD is included with the CUDA image already.
 # If using a plain Ubuntu base, install instead:
@@ -13,7 +12,7 @@ FROM nvidia/cuda:12.8.1-devel-ubuntu20.04
 
 
 LABEL maintainer="evgenii@gios.bio" \
-      description="GROMACS 2018 with OpenCL GPU support + CHAP (Channel annotation package)"
+      description="GROMACS 2018 with CUDA GPU support + CHAP (Channel annotation package)"
 
 # ---------------------------------------------------------------------------
 # 1. System dependencies
@@ -66,7 +65,7 @@ RUN wget -q http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_VERSION}.tar.gz
         -DCMAKE_INSTALL_PREFIX=${GROMACS_INSTALL_DIR} \
         -DGMX_GPU=ON \
         -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
-        -DGMX_CUDA_TARGET_COMPUTE="120" \
+        -DGMX_CUDA_TARGET_COMPUTE="89" \
         -DGMX_FFT_LIBRARY=fftw3 \
         -DGMX_BUILD_OWN_FFTW=OFF \
         -DREGRESSIONTEST_DOWNLOAD=OFF \

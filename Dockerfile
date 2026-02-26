@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3 \
         python3-pip \
         python3-dev \
+        python3-pip \
         pkg-config \
         zlib1g-dev \
         libssl-dev \
@@ -102,12 +103,18 @@ ENV PATH="${CHAP_INSTALL_DIR}/bin:${PATH}" \
     LD_LIBRARY_PATH="${CHAP_INSTALL_DIR}/lib:${LD_LIBRARY_PATH}"
 
 # ---------------------------------------------------------------------------
-# 4. Shell initialisation – source GROMACS env on login
+# 4. Shell initialisation – source GROMACS env on login and add chap to PATH
 # ---------------------------------------------------------------------------
 RUN echo "source ${GROMACS_INSTALL_DIR}/bin/GMXRC" >> /etc/bash.bashrc
+ENV PATH="/opt/chap/chap/bin:${PATH}"
 
 # ---------------------------------------------------------------------------
-# 5. Working directory
+# 4. Python installation
+# ---------------------------------------------------------------------------
+RUN pip3 install --no-cache-dir  setuptools numpy 
+RUN pip3 install --no-cache-dir matplotlib
+# ---------------------------------------------------------------------------
+# 6. Working directory
 # ---------------------------------------------------------------------------
 WORKDIR /workspace
 

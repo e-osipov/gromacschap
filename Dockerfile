@@ -52,7 +52,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ---------------------------------------------------------------------------
 # 2. Build & install GROMACS 2018.8 (latest 2018 patch) with OpenCL support
 # --------------------------------------------------------------------------
-ENV GROMACS_VERSION=2018
+ENV GROMACS_VERSION=2018.8
 ENV GROMACS_INSTALL_DIR=/opt/gromacs
 
 WORKDIR /tmp
@@ -64,7 +64,7 @@ RUN wget -q http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_VERSION}.tar.gz
     && cmake .. \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=${GROMACS_INSTALL_DIR} \
-        -DGMX_GPU=OpenCL \
+        -DGMX_GPU=ON \
         -DGMX_USE_OPENCL=ON \
         -DGMX_FFT_LIBRARY=fftw3 \
         -DGMX_BUILD_OWN_FFTW=OFF \

@@ -38,7 +38,8 @@ def run_shell(command):
 # 1. Provide user input
 parser =  argparse.ArgumentParser()
 parser.add_argument('-i',help='GHARMM-GUI output with GROMACS files. You should prepare system using CHARMM-GUI', default='input/gromacs')
-parser.add_argument('-m', help='Path to MDP (params) folder')
+# unused params. Keep just in case they needed
+#parser.add_argument('-m', help='Path to MDP (params) folder')
 #parser.add_argument('-f',help='Force field to use for protein')
 #parser.add_argument('-w',help='Solvent force field',default='tip3p')
 parser.add_argument('-o',help='Output folder name', default='run')
@@ -51,7 +52,7 @@ shutil.copy2(f'{args.i}/step5_input.pdb',f'{args.o}/')
 shutil.copy2(f'{args.i}/topol.top',f'{args.o}/')
 shutil.copy2(f'{args.i}/index.ndx',f'{args.o}/')
 shutil.copytree(f'{args.i}/toppar',f'{args.o}/toppar')
-for f in glob.glob(f'{args.m}/*.mdp'):
+for f in glob.glob(f'{args.i}/*.mdp'):
     shutil.copy2(f,f'{args.o}/')
 
 os.chdir(args.o)
@@ -60,38 +61,38 @@ os.chdir(args.o)
 run_shell("gmx grompp -f step6.0_minimization.mdp -o minimization.tpr -c step5_input.gro -r step5_input.gro -p topol.top")
 run_shell("gmx mdrun -v -deffnm minimization")
 
-# 4. Report minimization values
+# 4. (Optional) Report minimization values
 #run_shell('gmx energy -f minimization.edr -o potential.xvg -xvg none')
 
 print("Setup Complete. Ready for NVT/NPT equilibration.")
 
 # 5. Run NVT
 # 5.1 Step 1
-run_shell('gmx grompp -f step6.1_equilibration_NVT_step1.mdp -o step6.1_equilibration_NVT_step1.tpr -c minimization.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.1_equilibration_NVT_step1')
+run_shell('gmx grompp -f step6.1_equilibration.mdp -o step6.1_equilibration.tpr -c minimization.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.1_equilibration')
 
 # 5.2 Step 2
-run_shell('gmx grompp -f step6.2_equilibration_NVT_step2.mdp -o step6.2_equilibration_NVT_step2.tpr -c step6.1_equilibration_NVT_step1.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.2_equilibration_NVT_step2')
+run_shell('gmx grompp -f step6.2_equilibration.mdp -o step6.2_equilibration.tpr -c step6.1_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.2_equilibration')
 
 # 5.3 Eval energy
 #run_shell('echo 17|gmx energy -f step6.2_equilibration_NVT_step2.edr -o  NVT_S2-temp.xvg -xvg none')
 
 # 6. Run NPT
-run_shell('gmx grompp -f step6.3_equilibration_NPT_step1.mdp -o step6.3_equilibration_NPT_step1.tpr -c step6.2_equilibration_NVT_step2.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.3_equilibration_NPT_step1')
+run_shell('gmx grompp -f step6.3_equilibration.mdp -o step6.3_equilibration.tpr -c step6.2_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.3_equilibration')
 
-# 6.2 Run step 2, reduce constraints
-run_shell('gmx grompp -f step6.4_equilibration_NPT_step2.mdp -o step6.4_equilibration_NPT_step2.tpr -c step6.3_equilibration_NPT_step1.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.4_equilibration_NPT_step2')
+# 6.2 Run step 2, relax constraints
+run_shell('gmx grompp -f step6.4_equilibration.mdp -o step6.4_equilibration.tpr -c step6.3_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.4_equilibration')
 
 # 6.3 Run step 3 of NPT
-run_shell('gmx grompp -f step6.5_equilibration_NPT_step3.mdp -o step6.5_equilibration_NPT_step3.tpr -c step6.4_equilibration_NPT_step2.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.5_equilibration_NPT_step3')
+run_shell('gmx grompp -f step6.5_equilibration.mdp -o step6.5_equilibration.tpr -c step6.4_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.5_equilibration')
 
 # 6.4 Run step 4 of NPT
-run_shell('gmx grompp -f step6.6_equilibration_NPT_step4.mdp -o step6.6_equilibration_NPT_step4.tpr -c step6.5_equilibration_NPT_step3.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.6_equilibration_NPT_step4')
+run_shell('gmx grompp -f step6.6_equilibration.mdp -o step6.6_equilibration.tpr -c step6.5_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
+run_shell('gmx mdrun -v -deffnm step6.6_equilibration')
 
 # 6.5 Check pressure
 #run_shell('echo 18|gmx energy -f step6.6_equilibration_NPT_step4.edr -o  NPT_S4_Press.xvg -xvg none')
@@ -99,7 +100,7 @@ print("""The system's temperature should rise to the desired level (~303 K) and 
 
 # 7. Production run
 # Generate params
-run_shell('gmx grompp -f step7_production_revised.mdp -o step7_production.tpr -c step6.6_equilibration_NPT_step4.gro -t step6.6_equilibration_NPT_step4.cpt -p topol.top -n index.ndx')
+run_shell('gmx grompp -f step7_production.mdp -o step7_production.tpr -c step6.6_equilibration.gro -t step6.6_equilibration.cpt -p topol.top -n index.ndx')
 
 run_shell('gmx mdrun -s step7_production -cpi')
 
@@ -112,7 +113,7 @@ run_shell('gmx mdrun -s step7_production -cpi')
 # 9. Run CHAP
 run_shell('chap -f traj_comp.xtc -s step7_production.tpr \
           -sel-pathway 1 -sel-solvent 16 -hydrophob-database zhu_2016')
-# modify data if zhu_2016 if necessary
+# modify data and add residues if necessary
 
 # 10. Draw graphs
 

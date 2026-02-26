@@ -31,7 +31,7 @@ def run_shell(command):
         f"{command}"
     )
     try:
-        subprocess.run(docker_cmd, shell=True, check=True)
+        subprocess.run(command, shell=True, check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error running command: {command}\n{e}")
 
@@ -69,30 +69,30 @@ print("Setup Complete. Ready for NVT/NPT equilibration.")
 # 5. Run NVT
 # 5.1 Step 1
 run_shell('gmx grompp -f step6.1_equilibration.mdp -o step6.1_equilibration.tpr -c minimization.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.1_equilibration')
+run_shell('gmx mdrun -v -deffnm step6.1_equilibration -nb cpu')
 
 # 5.2 Step 2
 run_shell('gmx grompp -f step6.2_equilibration.mdp -o step6.2_equilibration.tpr -c step6.1_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.2_equilibration')
+run_shell('gmx mdrun -v -deffnm step6.2_equilibration -nb cpu')
 
 # 5.3 Eval energy
 #run_shell('echo 17|gmx energy -f step6.2_equilibration_NVT_step2.edr -o  NVT_S2-temp.xvg -xvg none')
 
 # 6. Run NPT
 run_shell('gmx grompp -f step6.3_equilibration.mdp -o step6.3_equilibration.tpr -c step6.2_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.3_equilibration')
+run_shell('gmx mdrun -v -deffnm step6.3_equilibration -nb cpu')
 
 # 6.2 Run step 2, relax constraints
 run_shell('gmx grompp -f step6.4_equilibration.mdp -o step6.4_equilibration.tpr -c step6.3_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.4_equilibration')
+run_shell('gmx mdrun -v -deffnm step6.4_equilibration -nb cpu')
 
 # 6.3 Run step 3 of NPT
 run_shell('gmx grompp -f step6.5_equilibration.mdp -o step6.5_equilibration.tpr -c step6.4_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.5_equilibration')
+run_shell('gmx mdrun -v -deffnm step6.5_equilibration -nb cpu')
 
 # 6.4 Run step 4 of NPT
 run_shell('gmx grompp -f step6.6_equilibration.mdp -o step6.6_equilibration.tpr -c step6.5_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx')
-run_shell('gmx mdrun -v -deffnm step6.6_equilibration')
+run_shell('gmx mdrun -v -deffnm step6.6_equilibration -nb cpu')
 
 # 6.5 Check pressure
 #run_shell('echo 18|gmx energy -f step6.6_equilibration_NPT_step4.edr -o  NPT_S4_Press.xvg -xvg none')

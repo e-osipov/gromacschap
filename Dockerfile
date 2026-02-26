@@ -4,7 +4,7 @@
 # =============================================================================
 
 
-FROM nvidia/cuda:11.8.0-devel-ubuntu18.04
+FROM nvidia/cuda:12.8.1-devel-ubuntu20.04
 
 
 # NVIDIA OpenCL ICD is included with the CUDA image already.
@@ -65,7 +65,8 @@ RUN wget -q http://ftp.gromacs.org/pub/gromacs/gromacs-${GROMACS_VERSION}.tar.gz
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=${GROMACS_INSTALL_DIR} \
         -DGMX_GPU=ON \
-        -DGMX_USE_OPENCL=ON \
+        -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda \
+        -DGMX_CUDA_TARGET_COMPUTE="120" \
         -DGMX_FFT_LIBRARY=fftw3 \
         -DGMX_BUILD_OWN_FFTW=OFF \
         -DREGRESSIONTEST_DOWNLOAD=OFF \

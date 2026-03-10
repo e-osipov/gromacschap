@@ -35,7 +35,9 @@ shutil.copy2(f"{INPUT}/step5_input.gro", f"{OUTPUT}/")
 shutil.copy2(f"{INPUT}/step5_input.pdb", f"{OUTPUT}/")
 shutil.copy2(f"{INPUT}/topol.top", f"{OUTPUT}/")
 shutil.copy2(f"{INPUT}/index.ndx", f"{OUTPUT}/")
-shutil.copytree(f"{INPUT}/toppar", f"{OUTPUT}/toppar", dirs_exist_ok=True)
+os.makedirs(f"{OUTPUT}/toppar", exist_ok=True)
+for f in glob.glob(f"{INPUT}/toppar/*"):
+    shutil.copy2(f, f"{OUTPUT}/toppar/")
 for f in glob.glob(f"{INPUT}/*.mdp"):
     shutil.copy2(f, f"{OUTPUT}/")
 

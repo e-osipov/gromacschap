@@ -215,3 +215,6 @@ test/
 
 # old files
 old/
+
+# macos
+.DS_Store

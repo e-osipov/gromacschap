@@ -57,13 +57,13 @@ run_shell(
     "gmx grompp -f step6.1_equilibration.mdp -o step6.1_equilibration.tpr "
     "-c minimization.gro -r step5_input.gro -p topol.top -n index.ndx"
 )
-run_shell("gmx mdrun -v -deffnm step6.1_equilibration -nb cpu")
+run_shell("gmx mdrun -v -deffnm step6.1_equilibration ")
 
 run_shell(
     "gmx grompp -f step6.2_equilibration.mdp -o step6.2_equilibration.tpr "
     "-c step6.1_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx"
 )
-run_shell("gmx mdrun -v -deffnm step6.2_equilibration -nb cpu")
+run_shell("gmx mdrun -v -deffnm step6.2_equilibration ")
 
 # ── 5. NPT equilibration (steps 3–6) ────────────────────────────────
 for step in range(3, 7):
@@ -74,7 +74,7 @@ for step in range(3, 7):
         f"gmx grompp -f {curr_name}.mdp -o {curr_name}.tpr "
         f"-c {prev_name}.gro -r step5_input.gro -p topol.top -n index.ndx"
     )
-    run_shell(f"gmx mdrun -v -deffnm {curr_name} -nb cpu")
+    run_shell(f"gmx mdrun -v -deffnm {curr_name} ")
 
 print(
     "Equilibration complete. Temperature should be ~303 K and "

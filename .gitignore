@@ -210,5 +210,8 @@ __marimo__/
 # Tutorials
 tutorial/
 
+# local tests
+test/
+
 # old files
 old/

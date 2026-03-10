@@ -58,9 +58,7 @@ podman rm -f "$NAME" 2>/dev/null
 # --- Run the pipeline inside the container ---
 podman run --rm \
     --name "$NAME" \
-    -e HOST_UID="$(id -u)" \
-    -e HOST_GID="$(id -g)" \
-    -v "${INPUT}:/input:ro,Z" \
+-v "${INPUT}:/input:ro,Z" \
     -v "${OUTPUT}:/output:Z" \
     -v "${SCRIPT_DIR}/gromacs_run.py:/gromacs_run.py:ro,Z" \
     --device nvidia.com/gpu=all \

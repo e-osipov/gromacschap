@@ -284,9 +284,4 @@ pl.ylabel("G (kT)")
 pl.savefig("time_averaged_free_energy_profile.png", dpi=150)
 pl.close("energy_profile")
 
-host_uid = int(os.environ.get("HOST_UID", 0))
-host_gid = int(os.environ.get("HOST_GID", 0))
-if host_uid:
-    run_shell(f"chown -R {host_uid}:{host_gid} /output")
-
 print("Done. Results saved in current directory.")

@@ -8,4 +8,7 @@ Gromacs and CHAP pipeline  automated pipeline
     - first, find out what is your GPU architecture. Code for Nvidia GPU only: `nvidia-smi --query-gpu=gpu_name,compute_cap --format=csv`. For example, RTX4000 has compute 8.9
     - Multipy number from previous step by 10 and change line in `Dockerfile`: `-DGMX_CUDA_TARGET_COMPUTE="89" \` to show correct value
 - Build image: `podman build  --format docker -t chap:1.0 -t chap:latest .`
-- Once done, run the pipeline:
+
+# Running
+Build the system using CHARMM-GUI. Generate GROMACS input files.
+- Once done, run the pipeline: `sh run_chap.sh -i gromacs/ -o output`

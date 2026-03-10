@@ -3,12 +3,15 @@ Gromacs and CHAP pipeline  automated pipeline
 
 # Installation
 - Install Podman >4.2 wtih GPU support (ask Claude for specific commands for your distro)
-- fetch code using `git clone`
+- Fetch code using `git clone`
 - Adjust `Dockerfile` for your architecture:
     - first, find out what is your GPU architecture. Code for Nvidia GPU only: `nvidia-smi --query-gpu=gpu_name,compute_cap --format=csv`. For example, RTX4000 has compute 8.9
-    - Multipy number from previous step by 10 and change line in `Dockerfile`: `-DGMX_CUDA_TARGET_COMPUTE="89" \` to show correct value
+    - Multipy number from previous step by 10 and change "89" in `Dockerfile`: `-DGMX_CUDA_TARGET_COMPUTE="89" ` to your value
 - Build image: `podman build  --format docker -t chap:1.0 -t chap:latest .`
 
 # Running
-Build the system using CHARMM-GUI. Generate GROMACS input files.
-- Once done, run the pipeline: `sh run_chap.sh -i gromacs/ -o output`
+- Prepare the system using CHARMM-GUI. Generate GROMACS input files.
+- Run the pipeline on gromacs folder from CHARMM-GUI: `bash run_chap.sh -i gromacs/ -o output`
+
+# Troubleshooting
+- Code might fail due to outdated GROMACS 2018. In particular, it fails to recognize `pcoupl` value `C-rescale`. To fix this, go inside GROMACS folder from CHARMM-GUI and run: `sed -i 's/C-rescale/Isotropic/g' *.mdp`. Instead of 'Isotropic' you can use: 'No' 'Berendsen' 'Parrinello-Rahman', 'MTTK’

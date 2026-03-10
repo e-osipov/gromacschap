@@ -8,7 +8,6 @@ Based on: https://tutorials.gromacs.org/membrane-protein.html
 
 import subprocess
 import os
-import argparse
 import shutil
 import glob
 import json
@@ -27,29 +26,20 @@ def run_shell(command):
         raise SystemExit(1)
 
 
-# ── 1. Parse user input ─────────────────────────────────────────────
-parser = argparse.ArgumentParser(
-    description="Run GROMACS equilibration + production + CHAP analysis"
-)
-parser.add_argument(
-    "-i",
-    help="Input directory with CHARMM-GUI/GROMACS files (mounted as /input in container)",
-    default="/input",
-)
-parser.add_argument("-o", help="Output directory (mounted as /output in container)", default="/output")
-args = parser.parse_args()
+INPUT = "/input"
+OUTPUT = "/output"
 
-# ── 2. Copy required files to run directory ──────────────────────────
-os.makedirs(args.o, exist_ok=True)
-shutil.copy2(f"{args.i}/step5_input.gro", f"{args.o}/")
-shutil.copy2(f"{args.i}/step5_input.pdb", f"{args.o}/")
-shutil.copy2(f"{args.i}/topol.top", f"{args.o}/")
-shutil.copy2(f"{args.i}/index.ndx", f"{args.o}/")
-shutil.copytree(f"{args.i}/toppar", f"{args.o}/toppar", dirs_exist_ok=True)
-for f in glob.glob(f"{args.i}/*.mdp"):
-    shutil.copy2(f, f"{args.o}/")
+# ── 1. Copy required files to output directory ───────────────────────
+os.makedirs(OUTPUT, exist_ok=True)
+shutil.copy2(f"{INPUT}/step5_input.gro", f"{OUTPUT}/")
+shutil.copy2(f"{INPUT}/step5_input.pdb", f"{OUTPUT}/")
+shutil.copy2(f"{INPUT}/topol.top", f"{OUTPUT}/")
+shutil.copy2(f"{INPUT}/index.ndx", f"{OUTPUT}/")
+shutil.copytree(f"{INPUT}/toppar", f"{OUTPUT}/toppar", dirs_exist_ok=True)
+for f in glob.glob(f"{INPUT}/*.mdp"):
+    shutil.copy2(f, f"{OUTPUT}/")
 
-os.chdir(args.o)
+os.chdir(OUTPUT)
 
 # ── 3. Minimization ─────────────────────────────────────────────────
 run_shell(

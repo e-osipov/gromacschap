@@ -64,4 +64,4 @@ podman run --rm \
     -v "${SCRIPT_DIR}/gromacs_run.py:/gromacs_run.py:ro,Z" \
     --device nvidia.com/gpu=all \
     "$IMAGE" \
-    python3 /gromacs_run.py -i $INPUT -o $OUTPUT $EXTRA_ARGS
+    python3 /gromacs_run.py

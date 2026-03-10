@@ -284,4 +284,51 @@ pl.ylabel("G (kT)")
 pl.savefig("time_averaged_free_energy_profile.png", dpi=150)
 pl.close("energy_profile")
 
+# ── 10. Save plotted data as CSV ────────────────────────────────────
+pp = data["pathwayProfile"]
+s = np.array(pp["s"])
+pathway_data = np.column_stack([
+    s,
+    np.array(pp["radiusMean"]),
+    np.array(pp["radiusMin"]),
+    np.array(pp["radiusMax"]),
+    np.array(pp["radiusSd"]),
+    np.array(pp["pfHydrophobicityMean"]),
+    np.array(pp["pfHydrophobicityMin"]),
+    np.array(pp["pfHydrophobicityMax"]),
+    np.array(pp["pfHydrophobicitySd"]),
+    np.array(pp["densityMean"]),
+    np.array(pp["densityMin"]),
+    np.array(pp["densityMax"]),
+    np.array(pp["densitySd"]),
+    np.array(pp["energyMean"]),
+    np.array(pp["energySd"]),
+])
+np.savetxt(
+    "pathway_profile.csv",
+    pathway_data,
+    delimiter=",",
+    header=(
+        "s_nm,radiusMean_nm,radiusMin_nm,radiusMax_nm,radiusSd_nm,"
+        "pfHydrophobicityMean,pfHydrophobicityMin,pfHydrophobicityMax,pfHydrophobicitySd,"
+        "densityMean_nm-3,densityMin_nm-3,densityMax_nm-3,densitySd_nm-3,"
+        "energyMean_kT,energySd_kT"
+    ),
+    comments="",
+)
+
+rs = data["residueSummary"]
+residue_data = np.column_stack([
+    np.array(rs["s"]["mean"])[pf],
+    np.array(rs["rho"]["mean"])[pf],
+    hydro[pf],
+])
+np.savetxt(
+    "residue_summary_pore_facing.csv",
+    residue_data,
+    delimiter=",",
+    header="s_mean_nm,rho_mean_nm,hydrophobicity",
+    comments="",
+)
+
 print("Done. Results saved in current directory.")

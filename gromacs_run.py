@@ -308,18 +308,12 @@ resi = np.array(rs['id'])[pf]
 res = np.array(rs['name'])[pf]
 residue_labels = np.array([f"{name}{rid}" for name, rid in zip(res, resi)])
 
-residue_data = np.column_stack([
-    np.array(rs["s"]["mean"])[pf],
-    np.array(rs["rho"]["mean"])[pf],
-    hydro[pf],
-    residue_labels
-])
-np.savetxt(
-    "residue_summary_pore_facing.csv",
-    residue_data,
-    delimiter=",",
-    header="s_mean_nm,rho_mean_nm,hydrophobicity,residue labels",
-    comments="",
-)
+s_vals = np.array(rs["s"]["mean"])[pf]
+rho_vals = np.array(rs["rho"]["mean"])[pf]
+
+with open("residue_summary_pore_facing.csv", "w") as f:
+    f.write("s_mean_nm,rho_mean_nm,hydrophobicity,residue labels\n")
+    for s, rho, h, label in zip(s_vals, rho_vals, hydro[pf], residue_labels):
+        f.write("%.18e,%.18e,%.18e,%s\n" % (s, rho, h, label))
 
 print("Done. Results saved in current directory.")

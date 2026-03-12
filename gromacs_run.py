@@ -109,6 +109,11 @@ else:
     )
     run_shell("gmx mdrun -s step7_production -cpi")
 
+# Convert output to multiframe PDB
+run_shell("gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
+run_shell("gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
+run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
+
 # ── 7. CHAP analysis ────────────────────────────────────────────────
 if step_done(f"{OUTPUT}/output.json"):
     print("CHAP analysis results found, skipping.")
@@ -118,6 +123,7 @@ else:
         "-sel-pathway 1 -sel-solvent 16 -hydrophob-database zhu_2016 "
         "-hydrophob-fallback 0.0"
     )
+
 
 # ── 8. Plot radius profile ──────────────────────────────────────────
 with open("output.json") as f:
@@ -129,26 +135,6 @@ pl.plot(
     np.array(data["pathwayProfile"]["radiusMean"]),
     "k-",
 )
-
-pf = np.array(data["residueSummary"]["poreFacing"]["mean"]) > 0.5
-hydro = np.array(data["residueSummary"]["hydrophobicity"])
-
-pl.scatter(
-    np.array(data["residueSummary"]["s"]["mean"])[pf],
-    np.array(data["residueSummary"]["rho"]["mean"])[pf],
-    c=hydro[pf],
-    marker="o",
-    cmap="BrBG_r",
-)
-pl.clim(-max(abs(hydro)), max(abs(hydro)))
-cbar = pl.colorbar()
-cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
-pl.xlabel("s (nm)")
-pl.ylabel("Radius (nm)")
-pl.savefig("radius_profile.png", dpi=150)
-pl.close("radius_profile")
-
-# ── 9. Additional CHAP profile plots ────────────────────────────────
 
 pf = np.array(data["residueSummary"]["poreFacing"]["mean"]) > 0.5
 hydro = np.array(data["residueSummary"]["hydrophobicity"])
@@ -190,7 +176,7 @@ pl.margins(x=0)
 pl.title("Time-Averaged Radius Profile")
 pl.xlabel("s (nm)")
 pl.ylabel("R (nm)")
-pl.savefig("time_averaged_radius_profile.png", dpi=150)
+pl.savefig("time_averaged_radius_profile.png", dpi=300)
 pl.close("radius_profile_full")
 
 # Hydrophobicity profile
@@ -229,7 +215,7 @@ pl.margins(x=0)
 pl.title("Time-Averaged Hydrophobicity Profile")
 pl.xlabel("s (nm)")
 pl.ylabel("H (a.u.)")
-pl.savefig("time_averaged_hydrophobicity_profile.png", dpi=150)
+pl.savefig("time_averaged_hydrophobicity_profile.png", dpi=300)
 pl.close("hydrophobicity_profile")
 
 # Solvent number density profile
@@ -259,7 +245,7 @@ pl.margins(x=0)
 pl.title("Time-Averaged Solvent Number Density Profile")
 pl.xlabel("s (nm)")
 pl.ylabel("n (nm$^{-3}$)")
-pl.savefig("time_averaged_solvent_number_density_profile.png", dpi=150)
+pl.savefig("time_averaged_solvent_number_density_profile.png", dpi=300)
 pl.close("density_profile")
 
 # Free energy profile
@@ -281,7 +267,7 @@ pl.margins(x=0)
 pl.title("Time-Averaged Free Energy Profile")
 pl.xlabel("s (nm)")
 pl.ylabel("G (kT)")
-pl.savefig("time_averaged_free_energy_profile.png", dpi=150)
+pl.savefig("time_averaged_free_energy_profile.png", dpi=300)
 pl.close("energy_profile")
 
 # ── 10. Save plotted data as CSV ────────────────────────────────────
@@ -318,16 +304,21 @@ np.savetxt(
 )
 
 rs = data["residueSummary"]
+resi = np.array(rs['id'])[pf]
+res = np.array(rs['name'])[pf]
+residue_labels = np.array([f"{name}{rid}" for name, rid in zip(res, resi)])
+
 residue_data = np.column_stack([
     np.array(rs["s"]["mean"])[pf],
     np.array(rs["rho"]["mean"])[pf],
     hydro[pf],
+    residue_labels
 ])
 np.savetxt(
     "residue_summary_pore_facing.csv",
     residue_data,
     delimiter=",",
-    header="s_mean_nm,rho_mean_nm,hydrophobicity",
+    header="s_mean_nm,rho_mean_nm,hydrophobicity,residue labels",
     comments="",
 )
 

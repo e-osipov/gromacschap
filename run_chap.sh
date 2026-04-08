@@ -51,7 +51,7 @@ if [[ ! -d "$INPUT" ]]; then
     echo "Error: input directory '$INPUT' does not exist."
     exit 1
 fi
-
+SCRIPT_NAME="gromacs_run.py"
 # --- Remove any leftover container with the same name ---
 podman rm -f "$NAME" 2>/dev/null
 
@@ -60,7 +60,7 @@ podman run --rm \
     --name "$NAME" \
 -v "${INPUT}:/input:ro,Z" \
     -v "${OUTPUT}:/output:Z" \
-    -v "${SCRIPT_DIR}/gromacs_run.py:/gromacs_run.py:ro,Z" \
+    -v "${SCRIPT_DIR}/${SCRIPT_NAME}:/${SCRIPT_NAME}:ro,Z" \
     --device nvidia.com/gpu=all \
     "$IMAGE" \
-    python3 /gromacs_run.py
+    python3 /${SCRIPT_NAME}

@@ -61,7 +61,7 @@ if __name__ == '__main__':
             "-c step5_input.gro -r step5_input.gro -p topol.top"
         )
         run_shell("gmx mdrun -v -deffnm minimization")
-
+    run_shell("echo '13 0' |gmx energy -f minimization.edr -o gromacs_output/minimization")
     print("Minimization complete. Starting equilibration...")
 
     # ── 4. NVT equilibration (steps 1–2) ────────────────────────────────
@@ -82,6 +82,7 @@ if __name__ == '__main__':
             "-c step6.1_equilibration.gro -r step5_input.gro -p topol.top -n index.ndx"
         )
         run_shell("gmx mdrun -v -deffnm step6.2_equilibration ")
+    run_shell("echo '17 0' |gmx energy -f step6.2_equilibration.edr -o gromacs_output/step6.2_temperature")
 
     # ── 5. NPT equilibration (steps 3–6) ────────────────────────────────
     for step in range(3, 7):
@@ -96,7 +97,7 @@ if __name__ == '__main__':
             f"-c {prev_name}.gro -r step5_input.gro -p topol.top -n index.ndx"
         )
         run_shell(f"gmx mdrun -v -deffnm {curr_name} ")
-
+    run_shell("echo '18 0' |gmx energy -f step6.6_equilibration.edr -o  gromacs_output/step6.6_Pressure")
     print(
         "Equilibration complete. Temperature should be ~303 K and "
         "average pressure ~1 bar (large fluctuations are normal)."
@@ -112,21 +113,20 @@ if __name__ == '__main__':
             "-p topol.top -n index.ndx"
         )
         run_shell("gmx mdrun -s step7_production -cpi")
+    run_shell("echo '13 0' | gmx energy -f step7_production.edr -o gromacs_output/step7_Etot")
 
     # Convert output to multiframe PDB
-    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
-    run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
-    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
+    #run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
+    #run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
+    #run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
 
     # ── 7. CHAP analysis ────────────────────────────────────────────────
-    if step_done(f"{OUTPUT}/output.json"):
+    os.chdir('chap_output')
+    if step_done(f"output.json"):
         print("CHAP analysis results found, skipping.")
     else:
-        run_shell(
-            "chap -f traj_comp.xtc -s step7_production.tpr "
-            "-sel-pathway 1 -sel-solvent 16 -hydrophob-database zhu_2016 "
-            "-hydrophob-fallback 0.0"
-        )
+        traj = f"-f {OUTPUT}/traj_comp.xtc -s {OUTPUT}/step7_production.tpr "
+        run_shell(f"chap {traj}" "-sel-pathway 1 -sel-solvent 16 " "-hydrophob-fallback 0.0")
 
 
     # ── 8. Plot radius profile ──────────────────────────────────────────

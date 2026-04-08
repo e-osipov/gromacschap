@@ -15,3 +15,4 @@ Gromacs and CHAP pipeline  automated pipeline
 
 # Troubleshooting
 - Code might fail due to outdated GROMACS 2018. In particular, it fails to recognize `pcoupl` value `C-rescale`. To fix this, go inside GROMACS folder from CHARMM-GUI and run: `sed -i 's/C-rescale/Isotropic/g' *.mdp`. Instead of 'Isotropic' you can use: 'No' 'Berendsen' 'Parrinello-Rahman', 'MTTK’
+- Program will overwrite any `mdp` file at destination. So edit input `mdp` files to adjust GROMACS behaviour.

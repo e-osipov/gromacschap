@@ -64,3 +64,10 @@ podman run --rm \
     --device nvidia.com/gpu=all \
     "$IMAGE" \
     python3 /${SCRIPT_NAME}
+
+# --- Run PyMOL visualization if available ---
+if command -v pymol &>/dev/null; then
+    pymol -cq "${SCRIPT_DIR}/chap_pymol_gen.py"
+else
+    echo "pymol not found, skipping visualization."
+fi

@@ -113,7 +113,7 @@ if __name__ == '__main__':
             "-p topol.top -n index.ndx"
         )
         run_shell("gmx mdrun -s step7_production -cpi")
-    run_shell("echo '13 0' | gmx energy -f step7_production.edr -o gromacs_output/step7_Etot")
+    run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")
 
     # Convert output to multiframe PDB
     #run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
@@ -125,8 +125,9 @@ if __name__ == '__main__':
     if step_done(f"output.json"):
         print("CHAP analysis results found, skipping.")
     else:
-        traj = f"-f {OUTPUT}/traj_comp.xtc -s {OUTPUT}/step7_production.tpr "
-        run_shell(f"chap {traj}" "-sel-pathway 1 -sel-solvent 16 " "-hydrophob-fallback 0.0")
+        traj = f"-f {OUTPUT}/traj_comp.xtc -s {OUTPUT}/step7_production.tpr"
+        run_shell(f"chap {traj} " "-sel-pathway 1 -sel-solvent 16 " \
+                  "-hydrophob-fallback 0.0")
 
 
     # ── 8. Plot radius profile ──────────────────────────────────────────

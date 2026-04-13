@@ -67,7 +67,11 @@ podman run --rm \
 
 # --- Run PyMOL visualization if available ---
 if command -v pymol &>/dev/null; then
-    pymol -cq "${SCRIPT_DIR}/chap_pymol_gen.py"
+    CHAP_OUTPUT="${OUTPUT}/chap_output"
+    if [[ ! -d "$CHAP_OUTPUT" ]]; then
+        echo "Warning: chap_output directory not found at '$CHAP_OUTPUT'"
+    fi
+    cd "$CHAP_OUTPUT" && pymol -cqr "${SCRIPT_DIR}/pymol_run.py"
 else
-    echo "pymol not found, skipping visualization."
+    echo "PyMOL not found!"
 fi

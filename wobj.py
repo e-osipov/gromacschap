@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# Modified version with Python3 support
 
 from pymol import cmd
 from pymol.cgo import *

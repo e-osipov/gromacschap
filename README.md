@@ -2,7 +2,7 @@
 Gromacs and CHAP pipeline  automated pipeline
 
 # Installation
-- Install Podman >4.2 wtih GPU support (ask Claude for specific commands for your distro)
+- Install Podman >4.2 with GPU support (ask Claude for specific commands for your distro)
 - Fetch code using `git clone`
 - Adjust `Dockerfile` for your architecture:
     - first, find out what is your GPU architecture. Code for Nvidia GPU only: `nvidia-smi --query-gpu=gpu_name,compute_cap --format=csv`. For example, RTX4000 has compute 8.9

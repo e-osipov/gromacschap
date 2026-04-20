@@ -71,7 +71,7 @@ if command -v pymol &>/dev/null; then
     if [[ ! -d "$CHAP_OUTPUT" ]]; then
         echo "Warning: chap_output directory not found at '$CHAP_OUTPUT'"
     fi
-    cd "$CHAP_OUTPUT" && pymol -cqr "${SCRIPT_DIR}/pymol_run.py"
+    cd "$CHAP_OUTPUT" && pymol -cqr "${SCRIPT_DIR}/visualize_pathway.py" "--"
 else
     echo "PyMOL not found!"
 fi

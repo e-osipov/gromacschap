@@ -127,7 +127,7 @@ if __name__ == '__main__':
     else:
         traj = f"-f {OUTPUT}/traj_comp.xtc -s {OUTPUT}/step7_production.tpr"
         run_shell(f"chap {traj} " "-sel-pathway 1 -sel-solvent 16 " \
-                  "-hydrophob-fallback 0.0")
+                  "-hydrophob-fallback 0.0") # assuming hydrophobic
 
 
     # ── 8. Plot radius profile ──────────────────────────────────────────

@@ -38,15 +38,20 @@ if __name__ == '__main__':
 
     # ── 1. Copy required files to output directory ───────────────────────
     os.makedirs(OUTPUT, exist_ok=True)
-    shutil.copy2(f"{INPUT}/step5_input.gro", f"{OUTPUT}/")
-    shutil.copy2(f"{INPUT}/step5_input.pdb", f"{OUTPUT}/")
-    shutil.copy2(f"{INPUT}/topol.top", f"{OUTPUT}/")
-    shutil.copy2(f"{INPUT}/index.ndx", f"{OUTPUT}/")
+    for src in [f"{INPUT}/step5_input.gro", f"{INPUT}/step5_input.pdb",
+                f"{INPUT}/topol.top", f"{INPUT}/index.ndx"]:
+        dst = f"{OUTPUT}/{os.path.basename(src)}"
+        if not os.path.exists(dst):
+            shutil.copy2(src, dst)
     os.makedirs(f"{OUTPUT}/toppar", exist_ok=True)
     for f in glob.glob(f"{INPUT}/toppar/*"):
-        shutil.copy2(f, f"{OUTPUT}/toppar/")
+        dst = f"{OUTPUT}/toppar/{os.path.basename(f)}"
+        if not os.path.exists(dst):
+            shutil.copy2(f, dst)
     for f in glob.glob(f"{INPUT}/*.mdp"):
-        shutil.copy2(f, f"{OUTPUT}/")
+        dst = f"{OUTPUT}/{os.path.basename(f)}"
+        if not os.path.exists(dst):
+            shutil.copy2(f, dst)
 
     os.chdir(OUTPUT)
     # -- 2. Create folders for graphs ────────────────────────────────────

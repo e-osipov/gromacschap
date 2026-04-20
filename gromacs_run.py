@@ -116,9 +116,9 @@ if __name__ == '__main__':
     run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")
 
     # Convert output to multiframe PDB
-    #run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
-    #run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
-    #run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
+    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
+    run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
+    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
 
     # ── 7. CHAP analysis ────────────────────────────────────────────────
     os.chdir('chap_output')

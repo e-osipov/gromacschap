@@ -132,6 +132,7 @@ if __name__ == '__main__':
         print("Already extracted frames!Skipping...")
     else:
         run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_first.pdb -dump 0")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_middle.pdb -dump $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF/2}')")
         run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_last.pdb -b $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF}') -e 999999999")
 
     # ── 7. CHAP analysis ────────────────────────────────────────────────

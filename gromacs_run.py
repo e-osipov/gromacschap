@@ -126,7 +126,7 @@ if __name__ == '__main__':
     run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
     # produce clusters
     # gmx_mpi cluster -f input.xtc -s input.gro -g output.log -cutoff
-    run_shell("gmx cluster -f traj_comp.xtc -s step7_production.tpr -g gromacs_output/clustering.log -cutoff 0 0.1")
+    #run_shell("gmx cluster -f traj_comp.xtc -s step7_production.tpr -g gromacs_output/clustering.log -cutoff 0 0.1")
     # extract a few frames
     if step_done("gromacs_output/frame_first.pdb"):
         print("Already extracted frames!Skipping...")

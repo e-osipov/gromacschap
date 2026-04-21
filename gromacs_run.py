@@ -15,6 +15,14 @@ import json
 import numpy as np
 from matplotlib import pyplot as pl
 
+def save_png(xvg):
+    # takes as input path to xvg file
+    # saves png file
+    x, y = np.loadtxt(xvg, comments=["@", "#", "&"], unpack=True)
+    plt.plot(x, y)
+
+    out_file = xvg.replace(".xvg",".png")
+    pl.savefig(out_file, dpi=300)
 
 def run_shell(command):
     """Run a shell command directly. Exits on failure."""
@@ -67,6 +75,7 @@ if __name__ == '__main__':
         )
         run_shell("gmx mdrun -v -deffnm minimization")
     run_shell("echo '13 0' |gmx energy -f minimization.edr -o gromacs_output/minimization")
+    save_png("gromacs_output/minimization.xvg")
     print("Minimization complete. Starting equilibration...")
 
     # ── 4. NVT equilibration (steps 1–2) ────────────────────────────────
@@ -88,7 +97,7 @@ if __name__ == '__main__':
         )
         run_shell("gmx mdrun -v -deffnm step6.2_equilibration ")
     run_shell("echo '17 0' |gmx energy -f step6.2_equilibration.edr -o gromacs_output/step6.2_temperature")
-
+    save_png("gromacs_output/step6.2_temperature.xvg")
     # ── 5. NPT equilibration (steps 3–6) ────────────────────────────────
     for step in range(3, 7):
         prev = step - 1 if step > 3 else 2
@@ -107,6 +116,7 @@ if __name__ == '__main__':
         "Equilibration complete. Temperature should be ~303 K and "
         "average pressure ~1 bar (large fluctuations are normal)."
     )
+    save_png("gromacs_output/step6.6_Pressure.xvg")
 
     # ── 6. Production run ───────────────────────────────────────────────
     if step_done(f"{OUTPUT}/traj_comp.xtc"):
@@ -119,7 +129,7 @@ if __name__ == '__main__':
         )
         run_shell("gmx mdrun -s step7_production -cpi")
     run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")
-
+    save_png("gromacs_output/step7_Etot.xvg")
     # Convert output to multiframe PDB
     run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
     run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")

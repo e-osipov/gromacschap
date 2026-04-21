@@ -124,6 +124,15 @@ if __name__ == '__main__':
     run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
     run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
     run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
+    # produce clusters
+    # gmx_mpi cluster -f input.xtc -s input.gro -g output.log -cutoff
+    run_shell("gmx cluster -f traj_comp.xtc -s step7_production.tpr -g gromacs_output/clustering.log -cutoff 0 0.1")
+    # extract a few frames
+    if step_done("gromacs_output/frame_first.pdb"):
+        print("Already extracted frames!Skipping...")
+    else:
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_first.pdb -dump 0")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_last.pdb -b $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF}') -e 999999999")
 
     # ── 7. CHAP analysis ────────────────────────────────────────────────
     os.chdir('chap_output')

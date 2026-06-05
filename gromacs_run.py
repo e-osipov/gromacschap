@@ -110,7 +110,7 @@ if __name__ == '__main__':
         run_shell(
             "gmx grompp -f step7_production.mdp -o step7_production.tpr "
             "-c step6.6_equilibration.gro -t step6.6_equilibration.cpt "
-            "-p topol.top -n index.ndx"
+            "-p topol.top -n index.ndx -r -c step6.6_equilibration.gro "
         )
         run_shell("gmx mdrun -s step7_production -cpi")
     run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")

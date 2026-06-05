@@ -15,6 +15,14 @@ import json
 import numpy as np
 from matplotlib import pyplot as pl
 
+def save_png(xvg):
+    # takes as input path to xvg file
+    # saves png file
+    x, y = np.loadtxt(xvg, comments=["@", "#", "&"], unpack=True)
+    plt.plot(x, y)
+
+    out_file = xvg.replace(".xvg",".png")
+    pl.savefig(out_file, dpi=300)
 
 def run_shell(command):
     """Run a shell command directly. Exits on failure."""
@@ -38,15 +46,20 @@ if __name__ == '__main__':
 
     # ── 1. Copy required files to output directory ───────────────────────
     os.makedirs(OUTPUT, exist_ok=True)
-    shutil.copy2(f"{INPUT}/step5_input.gro", f"{OUTPUT}/")
-    shutil.copy2(f"{INPUT}/step5_input.pdb", f"{OUTPUT}/")
-    shutil.copy2(f"{INPUT}/topol.top", f"{OUTPUT}/")
-    shutil.copy2(f"{INPUT}/index.ndx", f"{OUTPUT}/")
+    for src in [f"{INPUT}/step5_input.gro", f"{INPUT}/step5_input.pdb",
+                f"{INPUT}/topol.top", f"{INPUT}/index.ndx"]:
+        dst = f"{OUTPUT}/{os.path.basename(src)}"
+        if not os.path.exists(dst):
+            shutil.copy2(src, dst)
     os.makedirs(f"{OUTPUT}/toppar", exist_ok=True)
     for f in glob.glob(f"{INPUT}/toppar/*"):
-        shutil.copy2(f, f"{OUTPUT}/toppar/")
+        dst = f"{OUTPUT}/toppar/{os.path.basename(f)}"
+        if not os.path.exists(dst):
+            shutil.copy2(f, dst)
     for f in glob.glob(f"{INPUT}/*.mdp"):
-        shutil.copy2(f, f"{OUTPUT}/")
+        dst = f"{OUTPUT}/{os.path.basename(f)}"
+        if not os.path.exists(dst):
+            shutil.copy2(f, dst)
 
     os.chdir(OUTPUT)
     # -- 2. Create folders for graphs ────────────────────────────────────
@@ -62,6 +75,7 @@ if __name__ == '__main__':
         )
         run_shell("gmx mdrun -v -deffnm minimization")
     run_shell("echo '13 0' |gmx energy -f minimization.edr -o gromacs_output/minimization")
+    save_png("gromacs_output/minimization.xvg")
     print("Minimization complete. Starting equilibration...")
 
     # ── 4. NVT equilibration (steps 1–2) ────────────────────────────────
@@ -83,7 +97,7 @@ if __name__ == '__main__':
         )
         run_shell("gmx mdrun -v -deffnm step6.2_equilibration ")
     run_shell("echo '17 0' |gmx energy -f step6.2_equilibration.edr -o gromacs_output/step6.2_temperature")
-
+    save_png("gromacs_output/step6.2_temperature.xvg")
     # ── 5. NPT equilibration (steps 3–6) ────────────────────────────────
     for step in range(3, 7):
         prev = step - 1 if step > 3 else 2
@@ -102,6 +116,7 @@ if __name__ == '__main__':
         "Equilibration complete. Temperature should be ~303 K and "
         "average pressure ~1 bar (large fluctuations are normal)."
     )
+    save_png("gromacs_output/step6.6_Pressure.xvg")
 
     # ── 6. Production run ───────────────────────────────────────────────
     if step_done(f"{OUTPUT}/traj_comp.xtc"):
@@ -114,11 +129,21 @@ if __name__ == '__main__':
         )
         run_shell("gmx mdrun -s step7_production -cpi")
     run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")
-
+    save_png("gromacs_output/step7_Etot.xvg")
     # Convert output to multiframe PDB
-    #run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
-    #run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
-    #run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
+    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
+    run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
+    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
+    # produce clusters
+    # gmx_mpi cluster -f input.xtc -s input.gro -g output.log -cutoff
+    #run_shell("gmx cluster -f traj_comp.xtc -s step7_production.tpr -g gromacs_output/clustering.log -cutoff 0 0.1")
+    # extract a few frames
+    if step_done("gromacs_output/frame_first.pdb"):
+        print("Already extracted frames!Skipping...")
+    else:
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_first.pdb -dump 0")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_middle.pdb -dump $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF/2}')")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_last.pdb -b $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF}') -e 999999999")
 
     # ── 7. CHAP analysis ────────────────────────────────────────────────
     os.chdir('chap_output')

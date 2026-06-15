@@ -26,11 +26,11 @@ def save_png(xvg_path):
     with open(xvg_path,'r') as f:
         for line in f:
             if 'xaxis label' in line:
-                pl.xlabel = line.split('"')[-2]
+                pl.xlabel(line.split('"')[-2])
             elif 'yaxis label' in line:
-                pl.ylabel = line.split('"')[-2]
+                pl.ylabel(line.split('"')[-2])
             elif 'title' in line:
-                pl.title = line.split('"')[-2]
+                pl.title(line.split('"')[-2])
     out_file = xvg_path.replace(".xvg", ".png")
     pl.tight_layout()
     pl.savefig(out_file, dpi=300)

@@ -140,15 +140,17 @@ if __name__ == '__main__':
             "-p topol.top -n index.ndx -r step6.6_equilibration.gro "
         )
         run_shell("gmx mdrun -s step7_production -cpi")
+    # ── 6.1 Analyse MD trajectory ───────────────────────────────────────  
     run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")
     save_png("gromacs_output/step7_Etot.xvg")
     # Convert output to multiframe PDB
+    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o every500frame.xtc -skip 500")
     run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
     run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
-    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 100")
+    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 500")
     # produce clusters
     # gmx_mpi cluster -f input.xtc -s input.gro -g output.log -cutoff
-    #run_shell("gmx cluster -f traj_comp.xtc -s step7_production.tpr -g gromacs_output/clustering.log -cutoff 0 0.1")
+    run_shell("echo 1 | gmx cluster -f traj_comp.xtc -s step5_input.gro -g gromacs_output/clustering.log -cutoff 0.1")
     # extract a few frames
     if step_done("gromacs_output/frame_first.pdb"):
         print("Already extracted frames!Skipping...")

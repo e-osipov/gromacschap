@@ -15,14 +15,26 @@ import json
 import numpy as np
 from matplotlib import pyplot as pl
 
-def save_png(xvg):
+def save_png(xvg_path):
     # takes as input path to xvg file
     # saves png file
-    x, y = np.loadtxt(xvg, comments=["@", "#", "&"], unpack=True)
-    plt.plot(x, y)
-
-    out_file = xvg.replace(".xvg",".png")
+    x, y = np.loadtxt(xvg_path, comments=["@", "#"], unpack=True)
+    #prepare figure
+    pl.figure()
+    pl.plot(x, y)
+    # read title information
+    with open(xvg_path,'r') as f:
+        for line in f:
+            if 'xaxis label' in line:
+                pl.xlabel = line.split('"')[-2]
+            elif 'yaxis label' in line:
+                pl.ylabel = line.split('"')[-2]
+            elif 'title' in line:
+                pl.title = line.split('"')[-2]
+    out_file = xvg_path.replace(".xvg", ".png")
+    pl.tight_layout()
     pl.savefig(out_file, dpi=300)
+    pl.close()
 
 def run_shell(command):
     """Run a shell command directly. Exits on failure."""

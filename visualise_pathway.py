@@ -69,17 +69,17 @@ cmd.hide("all")
 # protein pore:
 sel_protein = "pol"
 cmd.color("silver", sel_protein)
-cmd.show("cartoon", sel_protein)
+#cmd.show("cartoon", sel_protein)
 
 # pore lining (but not facing) residues:
-sel_pore_lining = "q > 0.5 and b < 0.5"
+sel_pore_lining = "polymer and element C and q > 0.5 and b < 0.5"
 cmd.show("sticks", sel_pore_lining)
-cmd.color("orange", sel_pore_lining)
+cmd.color("yellow", sel_pore_lining)
 
 # pore facing residues:
-sel_pore_facing = "b > 0.5"
+sel_pore_facing = "polymer and element C and b > 0.5"
 cmd.show("sticks", sel_pore_facing)
-cmd.color("yellow", sel_pore_facing)
+cmd.color("orange", sel_pore_facing)
 
 
 ###############################################################################
@@ -93,8 +93,8 @@ obj = wobj.import_wobj(args.surface)
 wobj.draw_wobj(obj, args.property)
 
 # Draw starting structure from step5
-cmd.load("../step5_input.pdb", "gromacs_step5")
-cmd.remove('gromacs_step5 and !polymer')
-
+cmd.load("../gromacs_output/frames/frame_last.pdb", "gromacs_last_frame")
+cmd.remove('gromacs_last_frame and !polymer')
+cmd.remove('element H')
 # Save session
 cmd.save('channel_in_pymol.pse')

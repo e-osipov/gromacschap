@@ -29,7 +29,7 @@ def save_png(xvg_path):
                 pl.xlabel(line.split('"')[-2])
             elif 'yaxis label' in line:
                 pl.ylabel(line.split('"')[-2])
-            elif 'title' in line:
+            elif 'legend' in line:
                 pl.title(line.split('"')[-2])
     out_file = xvg_path.replace(".xvg", ".png")
     pl.tight_layout()
@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     os.chdir(OUTPUT)
     # -- 2. Create folders for graphs ────────────────────────────────────
-    os.makedirs("gromacs_output", exist_ok=True)
+    os.makedirs("gromacs_output/frames", exist_ok=True)
     os.makedirs("chap_output", exist_ok=True)
     # ── 3. Minimization ─────────────────────────────────────────────────
     if step_done(f"{OUTPUT}/minimization.gro"):
@@ -143,21 +143,28 @@ if __name__ == '__main__':
     # ── 6.1 Analyse MD trajectory ───────────────────────────────────────  
     run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")
     save_png("gromacs_output/step7_Etot.xvg")
-    # Convert output to multiframe PDB
-    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o every500frame.xtc -skip 500")
-    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
-    run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
-    run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o step7_production.pdb -dt 500")
+    # Convert output to multiframe PDB if not done yet
+    if step_done("gromacs_output/frames/every500frame.pdb"):
+        print("already extracted every 500th frame!")
+    else:
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o gromacs_output/frames/every500frame.pdb -skip 500")
+    if step_done("gromacs_output/frames/step7_production.pdb"):
+        print('Already extracted frames')
+    else:
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
+        run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frames/step7_production.pdb -dt 500")
     # produce clusters
     # gmx_mpi cluster -f input.xtc -s input.gro -g output.log -cutoff
-    run_shell("echo 1 | gmx cluster -f traj_comp.xtc -s step5_input.gro -g gromacs_output/clustering.log -cutoff 0.1")
+    if not step_done("gromacs_output/clustering.log"):
+        run_shell("echo 1 | gmx cluster -f traj_comp.xtc -s step5_input.gro -g gromacs_output/clustering.log -cutoff 0.1")
     # extract a few frames
-    if step_done("gromacs_output/frame_first.pdb"):
+    if step_done("gromacs_output/frames/frame_first.pdb"):
         print("Already extracted frames!Skipping...")
     else:
-        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_first.pdb -dump 0")
-        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_middle.pdb -dump $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF/2}')")
-        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frame_last.pdb -b $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF}') -e 999999999")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frames/frame_first.pdb -dump 0")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frames/frame_middle.pdb -dump $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF/2}')")
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frames/frame_last.pdb -b $(gmx check -f clean.xtc 2>&1 | awk '/Last frame/{print $NF}') -e 999999999")
 
     # ── 7. CHAP analysis ────────────────────────────────────────────────
     os.chdir('chap_output')
@@ -264,7 +271,6 @@ if __name__ == '__main__':
 
     # Solvent number density profile
     pl.figure("density_profile")
-    pl.axhline(y=33.3679, linestyle="dashed")
     pl.plot(
         np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["densityMean"]),
@@ -288,7 +294,7 @@ if __name__ == '__main__':
     pl.margins(x=0)
     pl.title("Time-Averaged Solvent Number Density Profile")
     pl.xlabel("s (nm)")
-    pl.ylabel("n (nm$^{-3}$)")
+    pl.ylabel("Number of waters / (nm$^{-3}$)")
     pl.savefig("time_averaged_solvent_number_density_profile.png", dpi=300)
     pl.close("density_profile")
 
@@ -310,7 +316,7 @@ if __name__ == '__main__':
     pl.margins(x=0)
     pl.title("Time-Averaged Free Energy Profile")
     pl.xlabel("s (nm)")
-    pl.ylabel("G (kT)")
+    pl.ylabel("G ")
     pl.savefig("time_averaged_free_energy_profile.png", dpi=300)
     pl.close("energy_profile")
 

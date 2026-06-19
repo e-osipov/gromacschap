@@ -177,45 +177,50 @@ if __name__ == '__main__':
 
 
     # ── 8. Plot radius profile ──────────────────────────────────────────
+    def moving_average(y, window):
+        """Centered sliding-window mean. Window is forced odd; edges shrink."""
+        window = max(1, int(window) | 1)  # force odd
+        half = window // 2
+        out = np.empty(len(y), dtype=float)
+        for i in range(len(y)):
+            lo = max(0, i - half)
+            hi = min(len(y), i + half + 1)
+            out[i] = np.mean(y[lo:hi])
+        return out
+
     with open("output.json") as f:
         data = json.load(f)
 
-    pl.figure("radius_profile")
-    pl.plot(
-        np.array(data["pathwayProfile"]["s"]),
-        np.array(data["pathwayProfile"]["radiusMean"]),
-        "k-",
-    )
 
     pf = np.array(data["residueSummary"]["poreFacing"]["mean"]) > 0.5
     hydro = np.array(data["residueSummary"]["hydrophobicity"])
     hydro_lim = max(abs(hydro))
 
-    # Radius profile with variance bands
+    # Radius profile with variance bands (radius in angstroms: nm * 10)
     pl.figure("radius_profile_full")
     pl.plot(
+        np.array(data["pathwayProfile"]["radiusMean"]) * 10,
         np.array(data["pathwayProfile"]["s"]),
-        np.array(data["pathwayProfile"]["radiusMean"]),
         "k-",
     )
-    pl.fill_between(
+    pl.fill_betweenx(
         np.array(data["pathwayProfile"]["s"]),
-        np.array(data["pathwayProfile"]["radiusMin"]),
-        np.array(data["pathwayProfile"]["radiusMax"]),
+        np.array(data["pathwayProfile"]["radiusMin"]) * 10,
+        np.array(data["pathwayProfile"]["radiusMax"]) * 10,
         facecolor="#000000",
         alpha=0.1,
     )
-    radius_sd = np.array(data["pathwayProfile"]["radiusSd"])
-    pl.fill_between(
+    radius_sd = np.array(data["pathwayProfile"]["radiusSd"]) * 10
+    pl.fill_betweenx(
         np.array(data["pathwayProfile"]["s"]),
-        np.array(data["pathwayProfile"]["radiusMean"]) - radius_sd,
-        np.array(data["pathwayProfile"]["radiusMean"]) + radius_sd,
+        np.array(data["pathwayProfile"]["radiusMean"]) * 10 - radius_sd,
+        np.array(data["pathwayProfile"]["radiusMean"]) * 10 + radius_sd,
         facecolor="#000000",
         alpha=0.2,
     )
     pl.scatter(
+        np.array(data["residueSummary"]["rho"]["mean"])[pf] * 10,
         np.array(data["residueSummary"]["s"]["mean"])[pf],
-        np.array(data["residueSummary"]["rho"]["mean"])[pf],
         c=hydro[pf],
         marker="o",
         cmap="BrBG_r",
@@ -223,21 +228,21 @@ if __name__ == '__main__':
     pl.clim(-hydro_lim, hydro_lim)
     cbar = pl.colorbar()
     cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
-    pl.margins(x=0)
+    pl.margins(y=0)
     pl.title("Time-Averaged Radius Profile")
-    pl.xlabel("s (nm)")
-    pl.ylabel("R (nm)")
+    pl.xlabel("R (Å)")
+    pl.ylabel("s (nm)")
     pl.savefig("time_averaged_radius_profile.png", dpi=300)
     pl.close("radius_profile_full")
 
     # Hydrophobicity profile
     pl.figure("hydrophobicity_profile")
     pl.plot(
-        np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["pfHydrophobicityMean"]),
+        np.array(data["pathwayProfile"]["s"]),
         "k-",
     )
-    pl.fill_between(
+    pl.fill_betweenx(
         np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["pfHydrophobicityMin"]),
         np.array(data["pathwayProfile"]["pfHydrophobicityMax"]),
@@ -245,7 +250,7 @@ if __name__ == '__main__':
         alpha=0.1,
     )
     hydrophobicity_sd = np.array(data["pathwayProfile"]["pfHydrophobicitySd"])
-    pl.fill_between(
+    pl.fill_betweenx(
         np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["pfHydrophobicityMean"]) - hydrophobicity_sd,
         np.array(data["pathwayProfile"]["pfHydrophobicityMean"]) + hydrophobicity_sd,
@@ -253,8 +258,8 @@ if __name__ == '__main__':
         alpha=0.2,
     )
     pl.scatter(
-        np.array(data["residueSummary"]["s"]["mean"])[pf],
         hydro[pf],
+        np.array(data["residueSummary"]["s"]["mean"])[pf],
         c=hydro[pf],
         marker="o",
         cmap="BrBG_r",
@@ -262,21 +267,21 @@ if __name__ == '__main__':
     pl.clim(-hydro_lim, hydro_lim)
     cbar = pl.colorbar()
     cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
-    pl.margins(x=0)
+    pl.margins(y=0)
     pl.title("Time-Averaged Hydrophobicity Profile")
-    pl.xlabel("s (nm)")
-    pl.ylabel("H (a.u.)")
+    pl.xlabel("H (a.u.)")
+    pl.ylabel("s (nm)")
     pl.savefig("time_averaged_hydrophobicity_profile.png", dpi=300)
     pl.close("hydrophobicity_profile")
 
     # Solvent number density profile
     pl.figure("density_profile")
     pl.plot(
-        np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["densityMean"]),
+        np.array(data["pathwayProfile"]["s"]),
         "k-",
     )
-    pl.fill_between(
+    pl.fill_betweenx(
         np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["densityMin"]),
         np.array(data["pathwayProfile"]["densityMax"]),
@@ -284,39 +289,57 @@ if __name__ == '__main__':
         alpha=0.1,
     )
     density_sd = np.array(data["pathwayProfile"]["densitySd"])
-    pl.fill_between(
+    pl.fill_betweenx(
         np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["densityMean"]) - density_sd,
         np.array(data["pathwayProfile"]["densityMean"]) + density_sd,
         facecolor="#000000",
         alpha=0.2,
     )
-    pl.margins(x=0)
+    pl.margins(y=0)
     pl.title("Time-Averaged Solvent Number Density Profile")
-    pl.xlabel("s (nm)")
-    pl.ylabel("Number of waters / (nm$^{-3}$)")
+    pl.xlabel("Number of waters / (nm$^{-3}$)")
+    pl.ylabel("s (nm)")
     pl.savefig("time_averaged_solvent_number_density_profile.png", dpi=300)
     pl.close("density_profile")
+
+
+
+
+    # Solvent number density profile — smoothed (sliding-window moving average)
+    DENSITY_SMOOTH_WINDOW = 11  # number of points in the sliding window
+    density_s = np.array(data["pathwayProfile"]["s"])
+    density_mean = np.array(data["pathwayProfile"]["densityMean"])
+    density_smooth = moving_average(density_mean, DENSITY_SMOOTH_WINDOW)
+    pl.figure("density_profile_smoothed")
+    pl.plot(density_smooth, density_s, "k-")
+    pl.margins(y=0)
+    pl.title("Smoothed Solvent Number Density Profile")
+    pl.xlabel("Number of waters / (nm$^{-3}$)")
+    pl.ylabel("s (nm)")
+    pl.savefig("time_averaged_solvent_number_density_profile_smoothed_11points.png", dpi=300)
+    pl.close("density_profile_smoothed")
 
     # Free energy profile
     pl.figure("energy_profile")
     pl.plot(
-        np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["energyMean"]),
+        np.array(data["pathwayProfile"]["s"]),
         "k-",
     )
     energy_sd = np.array(data["pathwayProfile"]["energySd"])
-    pl.fill_between(
+    pl.fill_betweenx(
         np.array(data["pathwayProfile"]["s"]),
         np.array(data["pathwayProfile"]["energyMean"]) - energy_sd,
         np.array(data["pathwayProfile"]["energyMean"]) + energy_sd,
         facecolor="#000000",
         alpha=0.2,
     )
-    pl.margins(x=0)
+    pl.margins(y=0)
+    # leave x-axis un-inverted so negative G is on the left
     pl.title("Time-Averaged Free Energy Profile")
-    pl.xlabel("s (nm)")
-    pl.ylabel("G ")
+    pl.xlabel("G ")
+    pl.ylabel("s (nm)")
     pl.savefig("time_averaged_free_energy_profile.png", dpi=300)
     pl.close("energy_profile")
 

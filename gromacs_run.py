@@ -25,9 +25,9 @@ def save_png(xvg_path):
     # read title information
     with open(xvg_path,'r') as f:
         for line in f:
-            if 'xaxis label' in line:
+            if 'xaxis  label' in line:
                 pl.xlabel(line.split('"')[-2])
-            elif 'yaxis label' in line:
+            elif 'yaxis  label' in line:
                 pl.ylabel(line.split('"')[-2])
             elif 's0 legend' in line:
                 pl.title(line.split('"')[-2])

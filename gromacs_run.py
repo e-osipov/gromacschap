@@ -154,7 +154,7 @@ if __name__ == '__main__':
         print('Already extracted frames')
     else:
         run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
-        run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
+        run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -pbc mol -ur compact")
         run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frames/step7_production.pdb -dt 500")
     # Write every 500th PBC-corrected frame as a separate PDB (-sep -> frame0.pdb, frame1.pdb, ...)
     if glob.glob("gromacs_output/frames/every500/frame*.pdb"):

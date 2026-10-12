@@ -72,12 +72,12 @@ cmd.color("silver", sel_protein)
 #cmd.show("cartoon", sel_protein)
 
 # pore lining (but not facing) residues:
-sel_pore_lining = "polymer and element C and q > 0.5 and b < 0.5"
+sel_pore_lining = "element C and q > 0.5 and b < 0.5"
 cmd.show("sticks", sel_pore_lining)
 cmd.color("yellow", sel_pore_lining)
 
 # pore facing residues:
-sel_pore_facing = "polymer and element C and b > 0.5"
+sel_pore_facing = "element C and b > 0.5"
 cmd.show("sticks", sel_pore_facing)
 cmd.color("orange", sel_pore_facing)
 

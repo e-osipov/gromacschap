@@ -143,17 +143,18 @@ if __name__ == '__main__':
     # ── 6.1 Analyse MD trajectory ───────────────────────────────────────  
     run_shell("echo '13 0' | gmx energy -f ener.edr -o gromacs_output/step7_Etot")
     save_png("gromacs_output/step7_Etot.xvg")
-    # Convert output to multiframe PDB if not done yet
-    if step_done("gromacs_output/frames/every500frame.pdb"):
-        print("already extracted every 500th frame!")
-    else:
-        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o gromacs_output/frames/every500frame.pdb -skip 500")
     if step_done("gromacs_output/frames/step7_production.pdb"):
         print('Already extracted frames')
     else:
         run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f traj_comp.xtc -o whole.xtc -pbc whole")
         run_shell("echo 1 0 | gmx trjconv -s step7_production.tpr -f whole.xtc -o clean.xtc -center -pbc mol -ur compact")
         run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frames/step7_production.pdb -dt 500")
+    # Write every 500th PBC-corrected frame as a separate PDB (-sep -> frame0.pdb, frame1.pdb, ...)
+    if glob.glob("gromacs_output/frames/every500/frame*.pdb"):
+        print("already extracted every 500th frame!")
+    else:
+        os.makedirs("gromacs_output/frames/every500", exist_ok=True)
+        run_shell("echo 0 | gmx trjconv -s step7_production.tpr -f clean.xtc -o gromacs_output/frames/every500/frame.pdb -skip 500 -sep")
     # produce clusters
     # gmx_mpi cluster -f input.xtc -s input.gro -g output.log -cutoff
     if not step_done("gromacs_output/clustering.log"):
@@ -171,7 +172,7 @@ if __name__ == '__main__':
     if step_done(f"output.json"):
         print("CHAP analysis results found, skipping.")
     else:
-        traj = f"-f {OUTPUT}/traj_comp.xtc -s {OUTPUT}/step7_production.tpr"
+        traj = f"-f {OUTPUT}/clean.xtc -s {OUTPUT}/step7_production.tpr"
         run_shell(f"chap {traj} " "-sel-pathway 1 -sel-solvent 16 " \
                   "-hydrophob-fallback 0.0") # assuming hydrophobic
 

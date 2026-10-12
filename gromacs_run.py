@@ -15,9 +15,17 @@ import json
 import numpy as np
 from matplotlib import pyplot as pl
 
+# keep text as editable text (not paths) in SVG output
+pl.rcParams["svg.fonttype"] = "none"
+
+def save_figure(out_base):
+    """Save current figure as raster (PNG) and vector (SVG)."""
+    pl.savefig(f"{out_base}.png", dpi=300)
+    pl.savefig(f"{out_base}.svg")
+
 def save_png(xvg_path):
     # takes as input path to xvg file
-    # saves png file
+    # saves png and svg files
     x, y = np.loadtxt(xvg_path, comments=["@", "#"], unpack=True)
     #prepare figure
     pl.figure()
@@ -31,9 +39,8 @@ def save_png(xvg_path):
                 pl.ylabel(line.split('"')[-2])
             elif 's0 legend' in line:
                 pl.title(line.split('"')[-2])
-    out_file = xvg_path.replace(".xvg", ".png")
     pl.tight_layout()
-    pl.savefig(out_file, dpi=300)
+    save_figure(xvg_path.replace(".xvg", ""))
     pl.close()
 
 def run_shell(command):
@@ -230,10 +237,11 @@ if __name__ == '__main__':
     cbar = pl.colorbar()
     cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
     pl.margins(y=0)
+    pl.gca().invert_yaxis()
     pl.title("Time-Averaged Radius Profile")
     pl.xlabel("R (Å)")
     pl.ylabel("s (nm)")
-    pl.savefig("time_averaged_radius_profile.png", dpi=300)
+    save_figure("time_averaged_radius_profile")
     pl.close("radius_profile_full")
 
     # Hydrophobicity profile
@@ -269,10 +277,11 @@ if __name__ == '__main__':
     cbar = pl.colorbar()
     cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
     pl.margins(y=0)
+    pl.gca().invert_yaxis()
     pl.title("Time-Averaged Hydrophobicity Profile")
     pl.xlabel("H (a.u.)")
     pl.ylabel("s (nm)")
-    pl.savefig("time_averaged_hydrophobicity_profile.png", dpi=300)
+    save_figure("time_averaged_hydrophobicity_profile")
     pl.close("hydrophobicity_profile")
 
     # Solvent number density profile
@@ -298,10 +307,11 @@ if __name__ == '__main__':
         alpha=0.2,
     )
     pl.margins(y=0)
+    pl.gca().invert_yaxis()
     pl.title("Time-Averaged Solvent Number Density Profile")
     pl.xlabel("Number of waters / (nm$^{-3}$)")
     pl.ylabel("s (nm)")
-    pl.savefig("time_averaged_solvent_number_density_profile.png", dpi=300)
+    save_figure("time_averaged_solvent_number_density_profile")
     pl.close("density_profile")
 
 
@@ -315,10 +325,11 @@ if __name__ == '__main__':
     pl.figure("density_profile_smoothed")
     pl.plot(density_smooth, density_s, "k-")
     pl.margins(y=0)
+    pl.gca().invert_yaxis()
     pl.title("Smoothed Solvent Number Density Profile")
     pl.xlabel("Number of waters / (nm$^{-3}$)")
     pl.ylabel("s (nm)")
-    pl.savefig("time_averaged_solvent_number_density_profile_smoothed_11points.png", dpi=300)
+    save_figure("time_averaged_solvent_number_density_profile_smoothed_11points")
     pl.close("density_profile_smoothed")
 
     # Free energy profile
@@ -337,11 +348,12 @@ if __name__ == '__main__':
         alpha=0.2,
     )
     pl.margins(y=0)
+    pl.gca().invert_yaxis()
     # leave x-axis un-inverted so negative G is on the left
     pl.title("Time-Averaged Free Energy Profile")
     pl.xlabel("G ")
     pl.ylabel("s (nm)")
-    pl.savefig("time_averaged_free_energy_profile.png", dpi=300)
+    save_figure("time_averaged_free_energy_profile")
     pl.close("energy_profile")
 
     # ── 10. Save plotted data as CSV ────────────────────────────────────

@@ -237,7 +237,6 @@ if __name__ == '__main__':
     cbar = pl.colorbar()
     cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
     pl.margins(y=0)
-    pl.gca().invert_yaxis()
     pl.title("Time-Averaged Radius Profile")
     pl.xlabel("R (Å)")
     pl.ylabel("s (nm)")
@@ -277,7 +276,6 @@ if __name__ == '__main__':
     cbar = pl.colorbar()
     cbar.ax.set_ylabel("Hydrophobicity (a.u.)")
     pl.margins(y=0)
-    pl.gca().invert_yaxis()
     pl.title("Time-Averaged Hydrophobicity Profile")
     pl.xlabel("H (a.u.)")
     pl.ylabel("s (nm)")
@@ -307,7 +305,6 @@ if __name__ == '__main__':
         alpha=0.2,
     )
     pl.margins(y=0)
-    pl.gca().invert_yaxis()
     pl.title("Time-Averaged Solvent Number Density Profile")
     pl.xlabel("Number of waters / (nm$^{-3}$)")
     pl.ylabel("s (nm)")
@@ -325,7 +322,6 @@ if __name__ == '__main__':
     pl.figure("density_profile_smoothed")
     pl.plot(density_smooth, density_s, "k-")
     pl.margins(y=0)
-    pl.gca().invert_yaxis()
     pl.title("Smoothed Solvent Number Density Profile")
     pl.xlabel("Number of waters / (nm$^{-3}$)")
     pl.ylabel("s (nm)")
@@ -348,7 +344,6 @@ if __name__ == '__main__':
         alpha=0.2,
     )
     pl.margins(y=0)
-    pl.gca().invert_yaxis()
     # leave x-axis un-inverted so negative G is on the left
     pl.title("Time-Averaged Free Energy Profile")
     pl.xlabel("G ")
